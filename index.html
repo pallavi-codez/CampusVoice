@@ -1,0 +1,874 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Complaint Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Outfit:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+    .font-heading {
+      font-family: 'Outfit', sans-serif;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes pulse-soft {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+    .animate-slide-in {
+      animation: slideIn 0.3s ease-out forwards;
+    }
+    .animate-pulse-soft {
+      animation: pulse-soft 2s ease-in-out infinite;
+    }
+    .hero-image-container {
+      position: relative;
+      overflow: hidden;
+      border-radius: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    .hero-image-container::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.8) 100%);
+      pointer-events: none;
+    }
+    .hero-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(1.05);
+      transition: transform 0.6s ease;
+    }
+    .hero-image-container:hover .hero-image {
+      transform: scale(1.1);
+    }
+    .card-hover {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-hover:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 40px -12px rgba(99, 102, 241, 0.25);
+    }
+    .card-hover:active {
+      transform: translateY(-2px) scale(0.98);
+    }
+    .btn-primary {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+    .btn-primary:hover::before {
+      left: 100%;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 20px 40px -8px rgba(99, 102, 241, 0.4);
+    }
+    .btn-primary:active {
+      transform: translateY(0) scale(0.98);
+    }
+    .status-badge {
+      transition: all 0.2s ease;
+      cursor: default;
+    }
+    .status-badge:hover {
+      transform: scale(1.05);
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+      background-size: 200% 200%;
+      animation: gradient-shift 3s ease infinite;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    @keyframes gradient-shift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    .pattern-bg {
+      background-color: #f8fafc;
+      background-image: 
+        radial-gradient(circle at 25% 25%, rgba(34, 197, 94, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+        linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+      background-size: 100% 100%, 100% 100%, 100% 100%;
+    }
+    input:focus, select:focus, textarea:focus {
+      transform: scale(1.01);
+      box-shadow: 0 8px 24px -8px rgba(99, 102, 241, 0.3);
+    }
+    .nav-btn {
+      position: relative;
+    }
+    .nav-btn::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) scaleX(0);
+      width: 80%;
+      height: 2px;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      transition: transform 0.3s ease;
+    }
+    .nav-btn:hover::after {
+      transform: translateX(-50%) scaleX(1);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-slate-50 pattern-bg overflow-auto">
+  <div id="app" class="h-full w-full flex flex-col"><!-- Navigation -->
+   <nav class="bg-white/90 backdrop-blur-xl border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+     <div class="flex justify-between items-center h-16"><button onclick="navigateTo('home')" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+       <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+       </div><span id="nav-title" class="font-heading font-bold text-2xl md:text-3xl text-slate-800">
+  CampusVoice
+</span>
+ </button>
+      <div class="flex items-center gap-2"><button onclick="navigateTo('home')" class="nav-btn px-4 py-2 rounded-lg text-slate-600 hover:bg-green-50 hover:text-green-700 font-medium transition-colors" data-page="home">Home</button> <button onclick="navigateTo('complaints')" class="nav-btn px-4 py-2 rounded-lg text-slate-600 hover:bg-green-50 hover:text-green-700 font-medium transition-colors" data-page="complaints">Complaints</button> <button id="admin-nav-btn" onclick="navigateTo('admin')" class="nav-btn px-4 py-2 rounded-lg text-slate-600 hover:bg-green-50 hover:text-green-700 font-medium transition-colors items-center gap-2 hidden" data-page="admin">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg> Admin </button> <button onclick="showAdminLogin()" class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium transition-colors flex items-center gap-2 border border-slate-300">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg> Admin Login </button>
+      </div>
+     </div>
+    </div>
+   </nav><!-- Admin Login Modal -->
+   <div id="admin-login-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-fade-in">
+     <div class="bg-gradient-to-r from-amber-500 to-orange-600 p-6">
+      <div class="flex items-center gap-3">
+       <div class="w-12 h-12 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+       </div>
+       <div>
+        <h2 class="font-heading text-2xl font-bold text-white">Admin Access</h2>
+        <p class="text-amber-100 text-sm">Enter credentials to continue</p>
+       </div>
+      </div>
+     </div>
+     <form id="admin-login-form" class="p-6 space-y-4">
+      <div><label for="admin-username" class="block text-sm font-semibold text-slate-700 mb-2">Username</label> <input type="text" id="admin-username" required placeholder="Enter admin username" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all placeholder-slate-400">
+      </div>
+      <div><label for="admin-password" class="block text-sm font-semibold text-slate-700 mb-2">Password</label> <input type="password" id="admin-password" required placeholder="Enter password" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all placeholder-slate-400">
+      </div>
+      <div id="login-error" class="hidden p-3 bg-red-50 border border-red-200 rounded-lg">
+       <p class="text-red-700 text-sm font-medium">Invalid credentials. Please try again.</p>
+      </div>
+      <div class="flex gap-3 pt-2"><button type="button" onclick="hideAdminLogin()" class="flex-1 px-4 py-3 rounded-xl border-2 border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 transition-colors"> Cancel </button> <button type="submit" class="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold hover:shadow-lg transition-all"> Login </button>
+      </div>
+     </form>
+    </div>
+   </div><!-- Main Content -->
+   <main class="flex-1 overflow-auto"><!-- Home Page -->
+    <section id="page-home" class="page animate-fade-in">
+     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12"><!-- Hero Section -->
+      <div class="relative mb-16">
+       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"><!-- Left Content -->
+        <div class="text-left">
+         <div class="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-full mb-6"><span class="w-2 h-2 bg-green-500 rounded-full animate-pulse-soft"></span> <span id="hero-tagline" class="text-green-700 font-semibold text-sm">Your voice matters</span>
+         </div>
+         <h1 id="hero-heading" class="font-heading text-5xl md:text-6xl lg:text-7xl font-bold text-slate-900 mb-6 leading-tight">Report Issues,<br><span class="bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent">Get Results</span></h1>
+         <p id="hero-description" class="text-xl text-slate-600 mb-10 leading-relaxed">Submit and track your campus complaints efficiently. From hostel issues to Wi-Fi problems, we ensure your concerns reach the right people.</p>
+         <div class="flex flex-col sm:flex-row gap-4"><button onclick="navigateTo('complaints')" class="btn-primary inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 relative overflow-hidden">
+           <svg class="w-5 h-5 relative z-10" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+           </svg><span class="relative z-10">Submit Complaint</span> </button> <button onclick="navigateTo('complaints')" class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-slate-700 font-bold rounded-xl border-2 border-slate-300 hover:border-green-500 hover:bg-green-50 transition-all">
+           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+           </svg> View Complaints </button>
+         </div>
+        </div><!-- Right Image -->
+        <div class="hero-image-container h-[400px] lg:h-[500px]"><img src="https://images.unsplash.com/photo-1562774053-701939374585?w=800&amp;h=600&amp;fit=crop" alt="College Campus" class="hero-image" loading="lazy" onerror="this.src=''; this.alt='Campus image unavailable'; this.style.display='none'; this.parentElement.innerHTML='<div class=\'w-full h-full bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center\'><svg class=\'w-32 h-32 text-white/30\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1\' d=\'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4\'/></svg></div>';">
+        </div>
+       </div>
+      </div><!-- Problem Categories -->
+      <div class="mb-16">
+       <h2 class="font-heading text-3xl font-bold text-slate-900 text-center mb-3">What can you report?</h2>
+       <p class="text-slate-600 text-center mb-10 max-w-2xl mx-auto">Choose from various categories to submit your complaint and get it resolved quickly</p>
+       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="card-hover bg-white rounded-2xl p-6 border border-slate-200 shadow-md hover:shadow-xl hover:border-green-300 cursor-pointer">
+         <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mb-4 shadow-lg"><span class="text-4xl">🏠</span>
+         </div>
+         <h3 class="font-heading font-bold text-xl text-slate-900 mb-2">Hostel Issues</h3>
+         <p class="text-slate-600 text-sm leading-relaxed">Room maintenance, cleanliness, amenities, and living conditions</p>
+        </div>
+        <div class="card-hover bg-white rounded-2xl p-6 border border-slate-200 shadow-md hover:shadow-xl hover:border-green-300 cursor-pointer">
+         <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center mb-4 shadow-lg"><span class="text-4xl">📚</span>
+         </div>
+         <h3 class="font-heading font-bold text-xl text-slate-900 mb-2">Classroom Problems</h3>
+         <p class="text-slate-600 text-sm leading-relaxed">Equipment issues, seating, AC/ventilation, and projector problems</p>
+        </div>
+        <div class="card-hover bg-white rounded-2xl p-6 border border-slate-200 shadow-md hover:shadow-xl hover:border-green-300 cursor-pointer">
+         <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center mb-4 shadow-lg"><span class="text-4xl">📶</span>
+         </div>
+         <h3 class="font-heading font-bold text-xl text-slate-900 mb-2">Internet/Wi-Fi</h3>
+         <p class="text-slate-600 text-sm leading-relaxed">Connectivity issues, slow speeds, and network access problems</p>
+        </div>
+        <div class="card-hover bg-white rounded-2xl p-6 border border-slate-200 shadow-md hover:shadow-xl hover:border-green-300 cursor-pointer">
+         <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center mb-4 shadow-lg"><span class="text-4xl">🚿</span>
+         </div>
+         <h3 class="font-heading font-bold text-xl text-slate-900 mb-2">Other Facilities</h3>
+         <p class="text-slate-600 text-sm leading-relaxed">Washrooms, canteen, library, and other campus facilities</p>
+        </div>
+       </div>
+      </div><!-- Stats Section -->
+      <div class="bg-gradient-to-br from-green-600 to-emerald-600 rounded-3xl p-8 md:p-12 text-white border border-green-500/20 shadow-2xl">
+       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+        <div>
+         <div id="stat-total" class="font-heading text-4xl md:text-5xl font-bold mb-2">
+          0
+         </div>
+         <div class="text-green-100">
+          Total Complaints
+         </div>
+        </div>
+        <div>
+         <div id="stat-resolved" class="font-heading text-4xl md:text-5xl font-bold mb-2">
+          0
+         </div>
+         <div class="text-green-100">
+          Resolved
+         </div>
+        </div>
+        <div>
+         <div id="stat-pending" class="font-heading text-4xl md:text-5xl font-bold mb-2">
+          0
+         </div>
+         <div class="text-green-100">
+          In Progress
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </section><!-- Complaints List Page -->
+    <section id="page-complaints" class="page hidden">
+     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div class="animate-fade-in">
+       <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-8">
+        <h1 class="font-heading text-3xl font-bold text-slate-900">Complaints</h1><button onclick="toggleComplaintForm()" class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all">
+         <svg id="form-toggle-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+         </svg><span id="form-toggle-text">Submit Complaint</span> </button>
+       </div><!-- Complaint Form (Collapsible) -->
+       <div id="complaint-form-container" class="hidden mb-8">
+        <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+         <div class="bg-gradient-to-r from-green-600 to-emerald-600 p-6">
+          <h2 class="font-heading text-2xl font-bold text-white">Submit a Complaint</h2>
+          <p class="text-green-100 mt-1">Fill in the details below to report your issue</p>
+         </div>
+         <form id="complaint-form" class="p-6 space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+           <div><label for="student-name" class="block text-sm font-semibold text-slate-700 mb-2">Student Name</label> <input type="text" id="student-name" required placeholder="Enter your full name" class="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all placeholder-slate-400">
+           </div>
+           <div><label for="usn" class="block text-sm font-semibold text-slate-700 mb-2">USN / Roll No</label> <input type="text" id="usn" required placeholder="e.g., 1XX21CS001" class="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all placeholder-slate-400">
+           </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+           <div><label for="category" class="block text-sm font-semibold text-slate-700 mb-2">Issue Category</label> <select id="category" required class="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all cursor-pointer"> <option value="">Select category</option> <option value="Hostel">🏠 Hostel</option> <option value="Classroom">📚 Classroom</option> <option value="Internet">📶 Internet/Wi-Fi</option> <option value="Others">🔧 Others</option> </select>
+           </div>
+           <div><label for="priority" class="block text-sm font-semibold text-slate-700 mb-2">Priority Level</label> <select id="priority" required class="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all cursor-pointer"> <option value="">Select priority</option> <option value="Low">🟢 Low</option> <option value="Medium">🟡 Medium</option> <option value="High">🔴 High</option> </select>
+           </div>
+          </div>
+          <div><label for="description" class="block text-sm font-semibold text-slate-700 mb-2">Issue Description</label> <textarea id="description" required rows="4" placeholder="Describe your issue in detail..." class="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all placeholder-slate-400 resize-none"></textarea>
+          </div>
+          <div class="flex gap-3"><button type="button" onclick="toggleComplaintForm()" class="flex-1 py-4 bg-slate-100 text-slate-700 font-semibold rounded-xl hover:bg-slate-200 transition-all"> Cancel </button> <button type="submit" id="submit-btn" class="flex-1 btn-primary py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg><span id="submit-btn-text">Submit Complaint</span> </button>
+          </div>
+         </form><!-- Success Message -->
+         <div id="success-message" class="hidden p-6 bg-green-50 border-t border-green-200">
+          <div class="flex items-center gap-3">
+           <div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+           </div>
+           <div>
+            <h3 class="font-semibold text-green-800">Complaint Submitted Successfully!</h3>
+            <p class="text-green-600 text-sm">Your complaint has been registered and will be reviewed shortly.</p>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div><!-- Filters -->
+       <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm mb-6">
+        <div class="flex flex-col md:flex-row gap-4">
+         <div class="flex-1">
+          <div class="relative">
+           <svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+           </svg><input type="text" id="search-input" placeholder="Search by name or issue..." class="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all placeholder-slate-400">
+          </div>
+         </div><select id="filter-category" class="px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-700 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none cursor-pointer"> <option value="">All Categories</option> <option value="Hostel">🏠 Hostel</option> <option value="Classroom">📚 Classroom</option> <option value="Internet">📶 Internet</option> <option value="Others">🔧 Others</option> </select> <select id="filter-status" class="px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-700 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none cursor-pointer"> <option value="">All Status</option> <option value="Submitted">📩 Submitted</option> <option value="In Review">🔍 In Review</option> <option value="Resolved">✅ Resolved</option> </select>
+        </div>
+       </div><!-- Complaints List -->
+       <div id="complaints-list" class="space-y-4"><!-- Complaints will be rendered here -->
+       </div><!-- Empty State -->
+       <div id="empty-state" class="hidden text-center py-16">
+        <div class="w-20 h-20 mx-auto rounded-full bg-slate-100 flex items-center justify-center mb-4">
+         <svg class="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+         </svg>
+        </div>
+        <h3 class="font-heading text-xl font-semibold text-slate-900 mb-2">No complaints found</h3>
+        <p class="text-slate-600 mb-6">Be the first to submit a complaint or adjust your filters</p><button onclick="toggleComplaintForm()" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all"> Submit Your First Complaint </button>
+       </div>
+      </div>
+     </div>
+    </section><!-- Admin Dashboard -->
+    <section id="page-admin" class="page hidden">
+     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div class="animate-fade-in">
+       <div class="flex items-center gap-3 mb-8">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg">
+         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+         </svg>
+        </div>
+        <div>
+         <h1 class="font-heading text-3xl font-bold text-slate-900">Admin Dashboard</h1>
+         <p class="text-slate-600">Manage and resolve student complaints</p>
+        </div>
+       </div><!-- Admin Stats -->
+       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+         <div class="flex items-center justify-between">
+          <div>
+           <p class="text-slate-500 text-sm font-medium">Total</p>
+           <p id="admin-total" class="font-heading text-2xl font-bold text-slate-900">0</p>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center"><span class="text-2xl">📋</span>
+          </div>
+         </div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+         <div class="flex items-center justify-between">
+          <div>
+           <p class="text-slate-500 text-sm font-medium">Submitted</p>
+           <p id="admin-submitted" class="font-heading text-2xl font-bold text-blue-600">0</p>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center"><span class="text-2xl">📩</span>
+          </div>
+         </div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+         <div class="flex items-center justify-between">
+          <div>
+           <p class="text-slate-500 text-sm font-medium">In Review</p>
+           <p id="admin-review" class="font-heading text-2xl font-bold text-amber-600">0</p>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center"><span class="text-2xl">🔍</span>
+          </div>
+         </div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+         <div class="flex items-center justify-between">
+          <div>
+           <p class="text-slate-500 text-sm font-medium">Resolved</p>
+           <p id="admin-resolved" class="font-heading text-2xl font-bold text-green-600">0</p>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center"><span class="text-2xl">✅</span>
+          </div>
+         </div>
+        </div>
+       </div><!-- Admin Filters -->
+       <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm mb-6">
+        <div class="flex flex-col md:flex-row gap-4"><select id="admin-filter-category" class="flex-1 px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-700 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none cursor-pointer"> <option value="">All Categories</option> <option value="Hostel">🏠 Hostel</option> <option value="Classroom">📚 Classroom</option> <option value="Internet">📶 Internet</option> <option value="Others">🔧 Others</option> </select> <select id="admin-filter-priority" class="flex-1 px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-700 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none cursor-pointer"> <option value="">All Priorities</option> <option value="High">🔴 High</option> <option value="Medium">🟡 Medium</option> <option value="Low">🟢 Low</option> </select> <select id="admin-filter-status" class="flex-1 px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-700 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none cursor-pointer"> <option value="">All Status</option> <option value="Submitted">📩 Submitted</option> <option value="In Review">🔍 In Review</option> <option value="Resolved">✅ Resolved</option> </select>
+        </div>
+       </div><!-- Admin Complaints Table -->
+       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+         <table class="w-full">
+          <thead>
+           <tr class="bg-slate-50 border-b border-slate-200">
+            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Student</th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Category</th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Issue</th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Priority</th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Actions</th>
+           </tr>
+          </thead>
+          <tbody id="admin-table-body" class="divide-y divide-slate-200"><!-- Rows will be rendered here -->
+          </tbody>
+         </table>
+        </div><!-- Admin Empty State -->
+        <div id="admin-empty-state" class="hidden text-center py-12">
+         <div class="w-16 h-16 mx-auto rounded-full bg-slate-100 flex items-center justify-center mb-4">
+          <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+          </svg>
+         </div>
+         <h3 class="font-heading text-lg font-semibold text-slate-900 mb-2">No complaints to manage</h3>
+         <p class="text-slate-600">Complaints will appear here once students submit them</p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </section>
+   </main>
+  </div>
+  <script>
+    // State
+    let complaints = [];
+    let currentPage = 'home';
+    let config = {};
+    let isAdminLoggedIn = false;
+    
+    const defaultConfig = {
+      site_title: 'Student Complaint Tracker',
+      tagline: 'Your voice matters',
+      hero_heading: 'Report Issues, Get Results',
+      hero_description: 'Submit and track your campus complaints efficiently. From hostel issues to Wi-Fi problems, we ensure your concerns reach the right people.'
+    };
+
+    // LocalStorage functions
+    function loadComplaints() {
+      const stored = localStorage.getItem('complaints');
+      return stored ? JSON.parse(stored) : [];
+    }
+
+    function saveComplaints() {
+      localStorage.setItem('complaints', JSON.stringify(complaints));
+    }
+
+    // Admin login functions
+    function showAdminLogin() {
+      document.getElementById('admin-login-modal').classList.remove('hidden');
+      document.getElementById('admin-username').focus();
+      document.getElementById('login-error').classList.add('hidden');
+    }
+
+    function hideAdminLogin() {
+      document.getElementById('admin-login-modal').classList.add('hidden');
+      document.getElementById('admin-login-form').reset();
+      document.getElementById('login-error').classList.add('hidden');
+    }
+
+    // Admin login form handler
+    document.getElementById('admin-login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const username = document.getElementById('admin-username').value;
+      const password = document.getElementById('admin-password').value;
+      
+      // Simple authentication (in production, this should be server-side)
+      if (username === 'admin' && password === 'admin123') {
+        isAdminLoggedIn = true;
+        hideAdminLogin();
+        
+        // Show admin nav button and hide login button
+        document.getElementById('admin-nav-btn').classList.remove('hidden');
+        document.getElementById('admin-nav-btn').classList.add('flex');
+        document.querySelector('[onclick="showAdminLogin()"]').classList.add('hidden');
+        
+        showToast('Welcome, Admin! Access granted.', 'success');
+        navigateTo('admin');
+      } else {
+        document.getElementById('login-error').classList.remove('hidden');
+      }
+    });
+
+    // Toggle complaint form
+    function toggleComplaintForm() {
+      const formContainer = document.getElementById('complaint-form-container');
+      const toggleIcon = document.getElementById('form-toggle-icon');
+      const toggleText = document.getElementById('form-toggle-text');
+      
+      if (formContainer.classList.contains('hidden')) {
+        formContainer.classList.remove('hidden');
+        formContainer.classList.add('animate-fade-in');
+        toggleText.textContent = 'Hide Form';
+        toggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>';
+      } else {
+        formContainer.classList.add('hidden');
+        toggleText.textContent = 'Submit Complaint';
+        toggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>';
+      }
+    }
+
+    // Navigation
+    function navigateTo(page) {
+      // Check if trying to access admin without login
+      if (page === 'admin' && !isAdminLoggedIn) {
+        showAdminLogin();
+        return;
+      }
+      
+      document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+      document.getElementById(`page-${page}`).classList.remove('hidden');
+      document.getElementById(`page-${page}`).classList.add('animate-fade-in');
+      
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('bg-green-50', 'text-green-700');
+      });
+      
+      const activeBtn = document.querySelector(`.nav-btn[data-page="${page}"]`);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-green-50', 'text-green-700');
+      }
+      
+      currentPage = page;
+      
+      if (page === 'complaints') renderComplaintsList();
+      if (page === 'admin') renderAdminTable();
+      if (page === 'home') updateStats();
+    }
+
+    // Status helpers
+    function getStatusColor(status) {
+      switch(status) {
+        case 'Submitted': return 'bg-blue-100 text-blue-700';
+        case 'In Review': return 'bg-amber-100 text-amber-700';
+        case 'Resolved': return 'bg-green-100 text-green-700';
+        default: return 'bg-slate-100 text-slate-700';
+      }
+    }
+
+    function getPriorityColor(priority) {
+      switch(priority) {
+        case 'High': return 'bg-red-100 text-red-700';
+        case 'Medium': return 'bg-amber-100 text-amber-700';
+        case 'Low': return 'bg-green-100 text-green-700';
+        default: return 'bg-slate-100 text-slate-700';
+      }
+    }
+
+    function getCategoryIcon(category) {
+      switch(category) {
+        case 'Hostel': return '🏠';
+        case 'Classroom': return '📚';
+        case 'Internet': return '📶';
+        default: return '🔧';
+      }
+    }
+
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    // Update stats
+    function updateStats() {
+      const total = complaints.length;
+      const resolved = complaints.filter(c => c.status === 'Resolved').length;
+      const pending = complaints.filter(c => c.status !== 'Resolved').length;
+      
+      document.getElementById('stat-total').textContent = total;
+      document.getElementById('stat-resolved').textContent = resolved;
+      document.getElementById('stat-pending').textContent = pending;
+    }
+
+    // Render complaints list
+    function renderComplaintsList() {
+      const container = document.getElementById('complaints-list');
+      const emptyState = document.getElementById('empty-state');
+      const searchTerm = document.getElementById('search-input').value.toLowerCase();
+      const categoryFilter = document.getElementById('filter-category').value;
+      const statusFilter = document.getElementById('filter-status').value;
+      
+      let filtered = complaints.filter(c => {
+        const matchesSearch = c.student_name.toLowerCase().includes(searchTerm) || 
+                             c.description.toLowerCase().includes(searchTerm) ||
+                             c.usn.toLowerCase().includes(searchTerm);
+        const matchesCategory = !categoryFilter || c.category === categoryFilter;
+        const matchesStatus = !statusFilter || c.status === statusFilter;
+        return matchesSearch && matchesCategory && matchesStatus;
+      });
+      
+      if (filtered.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      
+      emptyState.classList.add('hidden');
+      
+      // Sort by date, newest first
+      filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      
+      container.innerHTML = filtered.map((complaint, index) => `
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm card-hover animate-slide-in" style="animation-delay: ${index * 50}ms">
+          <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-2xl flex-shrink-0">
+                ${getCategoryIcon(complaint.category)}
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap mb-1">
+                  <h3 class="font-heading font-semibold text-slate-900">${complaint.student_name}</h3>
+                  <span class="text-slate-400">•</span>
+                  <span class="text-slate-600 text-sm">${complaint.usn}</span>
+                </div>
+                <p class="text-slate-700 mb-3">${complaint.description}</p>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700">${complaint.category}</span>
+                  <span class="px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor(complaint.priority)}">${complaint.priority} Priority</span>
+                  <span class="text-slate-500 text-xs">${formatDate(complaint.created_at)}</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex-shrink-0">
+              <span class="status-badge px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(complaint.status)}">${complaint.status}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Render admin table
+    function renderAdminTable() {
+      const tbody = document.getElementById('admin-table-body');
+      const emptyState = document.getElementById('admin-empty-state');
+      const categoryFilter = document.getElementById('admin-filter-category').value;
+      const priorityFilter = document.getElementById('admin-filter-priority').value;
+      const statusFilter = document.getElementById('admin-filter-status').value;
+      
+      let filtered = complaints.filter(c => {
+        const matchesCategory = !categoryFilter || c.category === categoryFilter;
+        const matchesPriority = !priorityFilter || c.priority === priorityFilter;
+        const matchesStatus = !statusFilter || c.status === statusFilter;
+        return matchesCategory && matchesPriority && matchesStatus;
+      });
+      
+      // Update admin stats
+      const total = complaints.length;
+      const submitted = complaints.filter(c => c.status === 'Submitted').length;
+      const review = complaints.filter(c => c.status === 'In Review').length;
+      const resolved = complaints.filter(c => c.status === 'Resolved').length;
+      
+      document.getElementById('admin-total').textContent = total;
+      document.getElementById('admin-submitted').textContent = submitted;
+      document.getElementById('admin-review').textContent = review;
+      document.getElementById('admin-resolved').textContent = resolved;
+      
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      
+      emptyState.classList.add('hidden');
+      
+      // Sort by priority (High first) then by date
+      const priorityOrder = { 'High': 0, 'Medium': 1, 'Low': 2 };
+      filtered.sort((a, b) => {
+        if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
+          return priorityOrder[a.priority] - priorityOrder[b.priority];
+        }
+        return new Date(b.created_at) - new Date(a.created_at);
+      });
+      
+      tbody.innerHTML = filtered.map(complaint => `
+        <tr class="hover:bg-slate-50 transition-colors">
+          <td class="px-6 py-4">
+            <div>
+              <div class="font-medium text-slate-900">${complaint.student_name}</div>
+              <div class="text-sm text-slate-600">${complaint.usn}</div>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <span class="inline-flex items-center gap-1">
+              <span>${getCategoryIcon(complaint.category)}</span>
+              <span class="text-slate-700">${complaint.category}</span>
+            </span>
+          </td>
+          <td class="px-6 py-4">
+            <p class="text-slate-700 max-w-xs truncate">${complaint.description}</p>
+          </td>
+          <td class="px-6 py-4">
+            <span class="px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor(complaint.priority)}">${complaint.priority}</span>
+          </td>
+          <td class="px-6 py-4">
+            <select 
+              onchange="updateStatus('${complaint.id}', this.value)"
+              class="px-3 py-2 rounded-lg border-2 border-slate-300 bg-white text-slate-700 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none cursor-pointer"
+            >
+              <option value="Submitted" ${complaint.status === 'Submitted' ? 'selected' : ''}>📩 Submitted</option>
+              <option value="In Review" ${complaint.status === 'In Review' ? 'selected' : ''}>🔍 In Review</option>
+              <option value="Resolved" ${complaint.status === 'Resolved' ? 'selected' : ''}>✅ Resolved</option>
+            </select>
+          </td>
+          <td class="px-6 py-4">
+            <button 
+              onclick="markResolved('${complaint.id}')"
+              class="px-4 py-2 text-sm font-medium rounded-lg ${complaint.status === 'Resolved' ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'} transition-colors"
+              ${complaint.status === 'Resolved' ? 'disabled' : ''}
+            >
+              ${complaint.status === 'Resolved' ? 'Resolved' : 'Mark Resolved'}
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Update complaint status
+    function updateStatus(id, newStatus) {
+      const complaint = complaints.find(c => c.id === id);
+      if (!complaint) return;
+      
+      complaint.status = newStatus;
+      saveComplaints();
+      renderAdminTable();
+      updateStats();
+      showToast('Status updated successfully!', 'success');
+    }
+
+    // Mark as resolved
+    function markResolved(id) {
+      updateStatus(id, 'Resolved');
+    }
+
+    // Show toast notification
+    function showToast(message, type = 'success') {
+      const existing = document.querySelector('.toast-notification');
+      if (existing) existing.remove();
+      
+      const toast = document.createElement('div');
+      toast.className = `toast-notification fixed bottom-6 right-6 px-6 py-4 rounded-xl shadow-lg z-50 animate-fade-in ${type === 'error' ? 'bg-red-600' : 'bg-green-600'} text-white font-medium`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Form submission
+    document.getElementById('complaint-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const submitBtn = document.getElementById('submit-btn');
+      const submitBtnText = document.getElementById('submit-btn-text');
+      submitBtn.disabled = true;
+      submitBtnText.textContent = 'Submitting...';
+      
+      const newComplaint = {
+        id: Date.now().toString(),
+        student_name: document.getElementById('student-name').value,
+        usn: document.getElementById('usn').value,
+        category: document.getElementById('category').value,
+        description: document.getElementById('description').value,
+        priority: document.getElementById('priority').value,
+        status: 'Submitted',
+        created_at: new Date().toISOString()
+      };
+      
+      complaints.push(newComplaint);
+      saveComplaints();
+      
+      submitBtn.disabled = false;
+      submitBtnText.textContent = 'Submit Complaint';
+      
+      document.getElementById('success-message').classList.remove('hidden');
+      this.reset();
+      showToast('Complaint submitted successfully!', 'success');
+      
+      setTimeout(() => {
+        document.getElementById('success-message').classList.add('hidden');
+        toggleComplaintForm();
+      }, 2000);
+      
+      updateStats();
+      if (currentPage === 'complaints') renderComplaintsList();
+    });
+
+    // Filter event listeners
+    document.getElementById('search-input').addEventListener('input', renderComplaintsList);
+    document.getElementById('filter-category').addEventListener('change', renderComplaintsList);
+    document.getElementById('filter-status').addEventListener('change', renderComplaintsList);
+    document.getElementById('admin-filter-category').addEventListener('change', renderAdminTable);
+    document.getElementById('admin-filter-priority').addEventListener('change', renderAdminTable);
+    document.getElementById('admin-filter-status').addEventListener('change', renderAdminTable);
+
+    // Config change handler
+    async function onConfigChange(cfg) {
+      config = cfg;
+      const c = { ...defaultConfig, ...config };
+      
+      document.getElementById('nav-title').textContent = c.site_title;
+      document.getElementById('hero-tagline').textContent = c.tagline;
+      
+      const heroHeading = document.getElementById('hero-heading');
+      const headingParts = c.hero_heading.split(',');
+      if (headingParts.length > 1) {
+        heroHeading.innerHTML = `${headingParts[0]},<br/><span class="bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent">${headingParts[1].trim()}</span>`;
+      } else {
+        heroHeading.innerHTML = `<span class="bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent">${c.hero_heading}</span>`;
+      }
+      
+      document.getElementById('hero-description').textContent = c.hero_description;
+    }
+
+    // Initialize
+    async function init() {
+      // Load complaints from localStorage
+      complaints = loadComplaints();
+      
+      if (window.elementSdk) {
+        await window.elementSdk.init({
+          defaultConfig,
+          onConfigChange,
+          mapToCapabilities: (cfg) => {
+            return {
+              recolorables: [],
+              borderables: [],
+              fontEditable: undefined,
+              fontSizeable: undefined
+            };
+          },
+          mapToEditPanelValues: (cfg) => {
+            const c = { ...defaultConfig, ...cfg };
+            return new Map([
+              ['site_title', c.site_title],
+              ['tagline', c.tagline],
+              ['hero_heading', c.hero_heading],
+              ['hero_description', c.hero_description]
+            ]);
+          }
+        });
+      }
+      
+      navigateTo('home');
+      updateStats();
+    }
+
+    init();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c0ce5d8e46ec17c',t:'MTc2ODg5NDU1NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
